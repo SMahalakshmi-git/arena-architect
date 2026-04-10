@@ -1,0 +1,45 @@
+{
+  "folders": [
+    { "name": "🏗️ Arena Architect (Root)", "path": "." },
+    { "name": "⚡ Backend (Node.js)", "path": "./backend" },
+    { "name": "🎨 Frontend (React)", "path": "./frontend" }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.git": true
+    },
+    "tailwindCSS.includeLanguages": {
+      "javascript": "javascript",
+      "javascriptreact": "javascript"
+    },
+    "emmet.includeLanguages": {
+      "javascript": "javascriptreact"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-azuretools.vscode-docker",
+      "mtxr.sqltools",
+      "mtxr.sqltools-driver-pg"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Backend: Node.js",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/backend/server.js",
+        "envFile": "${workspaceFolder}/backend/.env",
+        "cwd": "${workspaceFolder}/backend"
+      }
+    ]
+  }
+}

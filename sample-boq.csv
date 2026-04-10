@@ -1,0 +1,16 @@
+Material Name,Category,Unit,Quantity,Unit Price,Required By,Priority
+Structural Steel TMT Fe500,Steel,MT,120,85000,2025-06-01,high
+OPC Cement 53 Grade,Cement,bags,5000,380,2025-05-15,critical
+River Sand (Coarse),Aggregate,m³,800,1200,2025-05-20,medium
+Crushed Stone Aggregate 20mm,Aggregate,m³,600,950,2025-05-25,medium
+Ready Mix Concrete M30,Concrete,m³,250,5500,2025-06-10,high
+Steel Rebar 12mm,Steel,MT,45,78000,2025-06-05,high
+Waterproofing Compound,Chemical,litre,2000,450,2025-07-01,low
+Fly Ash Bricks,Masonry,nos,50000,8,2025-06-20,medium
+Plywood 18mm BWR,Wood,sheet,300,1800,2025-07-15,low
+Electrical Conduit 25mm,Electrical,m,2000,85,2025-07-01,medium
+MS Hollow Section 50x50mm,Steel,m,3000,320,2025-06-15,medium
+HDPE Water Pipe 110mm,Plumbing,m,500,450,2025-07-10,medium
+Precast RCC Slab Panel,Concrete,nos,80,12000,2025-08-01,high
+Aluminium Window Frame,Finishing,set,120,8500,2025-08-15,low
+Ceramic Floor Tiles 600x600,Finishing,m²,2500,650,2025-09-01,low
