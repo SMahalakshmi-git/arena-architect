@@ -43,15 +43,15 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-app.use("/auth", require("./routes/auth"));
-app.use("/projects", require("./routes/projects"));
-app.use("/materials", require("./routes/materials"));
-app.use("/suppliers", require("./routes/suppliers"));
-app.use("/alerts", require("./routes/alerts"));
-app.use("/upload", require("./routes/upload"));
-app.use("/cortex", require("./routes/cortex"));
-app.use("/reports", require("./routes/reports"));
-app.use("/dashboard", require("./routes/dashboard"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/projects", require("./routes/projects"));
+app.use("/api/materials", require("./routes/materials"));
+app.use("/api/suppliers", require("./routes/suppliers"));
+app.use("/api/alerts", require("./routes/alerts"));
+app.use("/api/upload", require("./routes/upload"));
+app.use("/api/cortex", require("./routes/cortex"));
+app.use("/api/reports", require("./routes/reports"));
+app.use("/api/dashboard", require("./routes/dashboard"));
 
 // Health check
 app.get("/health", (req, res) => {
