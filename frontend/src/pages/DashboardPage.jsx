@@ -5,7 +5,8 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement,
   LineElement, ArcElement, BarElement, Tooltip, Legend, Filler,
 } from "chart.js";
-import { TrendingUp, TrendingDown, Package, AlertTriangle, Truck, FolderOpen } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Truck, FolderOpen, Download } from "lucide-react";
+import jsPDF from "jspdf";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement, Tooltip, Legend, Filler);
 
@@ -61,7 +62,90 @@ export default function DashboardPage() {
     queryFn: () => api.get("/projects").then((r) => r.data),
   });
 
-  // Price trend mock data
+  const formatCurrency = (n) => {
+    if (!n) return "₹0";
+    if (n >= 10000000) return `₹${(n / 10000000).toFixed(1)}Cr`;
+    if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
+    return `₹${Number(n).toLocaleString()}`;
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Arena Architect", 14, 20);
+
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Procurement Summary Report", 14, 28);
+    doc.text(`Generated: ${new Date().toLocaleDateString("en-IN")}`, 14, 36);
+
+    doc.setDrawColor(230, 57, 70);
+    doc.setLineWidth(0.5);
+    doc.line(14, 40, 196, 40);
+
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.text("KPI Summary", 14, 52);
+
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Total Projects: ${kpis?.projects?.total || 0}`, 14, 62);
+    doc.text(`Active Projects: ${kpis?.projects?.active || 0}`, 14, 70);
+    doc.text(`Estimated Total Cost: ${formatCurrency(kpis?.materials?.estimated_total_cost)}`, 14, 78);
+    doc.text(`High Risk Materials: ${kpis?.materials?.high_risk_count || 0}`, 14, 86);
+    doc.text(`Best Supplier Score: ${kpis?.suppliers?.best_score || 0}/100`, 14, 94);
+    doc.text(`Total Alerts: ${alerts.length}`, 14, 102);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 108, 196, 108);
+
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Active Projects", 14, 120);
+
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    if (projects.length === 0) {
+      doc.text("No projects found.", 14, 130);
+    } else {
+      projects.forEach((p, i) => {
+        const y = 130 + i * 16;
+        doc.setTextColor(40, 40, 40);
+        doc.text(`${i + 1}. ${p.name}`, 14, y);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`   Location: ${p.location || "N/A"} | Budget: ${formatCurrency(p.total_budget)} | Status: ${p.status}`, 14, y + 6);
+      });
+    }
+
+    const alertsY = 130 + projects.length * 16 + 20;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, alertsY - 8, 196, alertsY - 8);
+
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Recent Alerts", 14, alertsY);
+
+    doc.setFontSize(10);
+    if (alerts.length === 0) {
+      doc.setTextColor(100, 100, 100);
+      doc.text("No active alerts.", 14, alertsY + 10);
+    } else {
+      alerts.forEach((a, i) => {
+        const y = alertsY + 10 + i * 14;
+        doc.setTextColor(40, 40, 40);
+        doc.text(`${i + 1}. [${a.severity?.toUpperCase()}] ${a.message}`, 14, y);
+      });
+    }
+
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text("Arena Architect — Material Supply Optimizer | Powered by Cortex Intelligence", 14, 285);
+
+    doc.save("arena-architect-procurement-summary.pdf");
+  };
+
   const labels = Array.from({ length: 14 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (13 - i));
     return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
@@ -93,14 +177,14 @@ export default function DashboardPage() {
     ],
   };
 
+  const highRisk = kpis?.materials?.high_risk_count || 0;
+  const totalMaterials = kpis?.materials?.total || 10;
+  const lowRisk = Math.max(0, totalMaterials - highRisk - 2);
+
   const donutData = {
     labels: ["Low Risk", "Medium Risk", "High Risk"],
     datasets: [{
-      data: [
-        Math.max(0, (kpis?.materials?.total || 10) - (kpis?.cortex?.high_risk_materials || 2) - 2),
-        2,
-        kpis?.cortex?.high_risk_materials || 2,
-      ],
+      data: [lowRisk, 2, highRisk],
       backgroundColor: ["#2ec4b6", "#f4a261", "#e63946"],
       borderWidth: 0,
     }],
@@ -114,13 +198,6 @@ export default function DashboardPage() {
       backgroundColor: ["#e63946", "#4361ee", "#2ec4b6", "#f4a261", "#8892a4"],
       borderRadius: 6,
     }],
-  };
-
-  const formatCurrency = (n) => {
-    if (!n) return "₹0";
-    if (n >= 10000000) return `₹${(n / 10000000).toFixed(1)}Cr`;
-    if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
-    return `₹${Number(n).toLocaleString()}`;
   };
 
   const severityStyle = {
@@ -142,12 +219,22 @@ export default function DashboardPage() {
             Real-time supply chain overview — Cortex powered
           </p>
         </div>
-        <div
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
-          style={{ background: "rgba(46,196,182,0.1)", color: "var(--green)", border: "1px solid rgba(46,196,182,0.2)" }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: "var(--green)" }} />
-          Cortex Live
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleDownloadPDF}
+            className="btn-primary flex items-center gap-2 text-sm"
+            style={{ padding: "8px 16px", borderRadius: "8px" }}
+          >
+            <Download size={15} />
+            Download PDF
+          </button>
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
+            style={{ background: "rgba(46,196,182,0.1)", color: "var(--green)", border: "1px solid rgba(46,196,182,0.2)" }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: "var(--green)" }} />
+            Cortex Live
+          </div>
         </div>
       </div>
 
@@ -163,7 +250,7 @@ export default function DashboardPage() {
         />
         <KPICard
           label="High-Risk Materials"
-          value={kpis?.cortex?.high_risk_materials ?? "—"}
+          value={kpis?.materials?.high_risk_count ?? "—"}
           sub="Require attention"
           icon={AlertTriangle}
           color="#f4a261"
@@ -171,7 +258,7 @@ export default function DashboardPage() {
         />
         <KPICard
           label="Best Supplier Score"
-          value={kpis?.cortex?.avg_supplier_score ? `${kpis.cortex.avg_supplier_score}/100` : "—"}
+          value={kpis?.suppliers?.best_score ? `${kpis.suppliers.best_score}/100` : "—"}
           sub="Cortex weighted avg"
           icon={Truck}
           color="#2ec4b6"
@@ -187,7 +274,6 @@ export default function DashboardPage() {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Price Trends */}
         <div className="card p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display font-semibold" style={{ color: "var(--text)" }}>Price Trends (14 days)</h3>
@@ -203,7 +289,6 @@ export default function DashboardPage() {
           <Line data={lineData} options={{ ...chartDefaults, responsive: true, maintainAspectRatio: true }} height={100} />
         </div>
 
-        {/* Risk Distribution */}
         <div className="card p-5">
           <h3 className="font-display font-semibold mb-4" style={{ color: "var(--text)" }}>Risk Distribution</h3>
           <Doughnut
@@ -219,7 +304,6 @@ export default function DashboardPage() {
 
       {/* Supplier scores + Alerts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Supplier Bar Chart */}
         <div className="card p-5">
           <h3 className="font-display font-semibold mb-4" style={{ color: "var(--text)" }}>Supplier Reliability Scores</h3>
           <Bar
@@ -238,7 +322,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Live Alerts */}
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display font-semibold" style={{ color: "var(--text)" }}>Live Alerts</h3>
